@@ -43,4 +43,4 @@ For every trial, two pods will come up:
 1. A `postgres` pod that contains the database that trial will run against and get patched accordingly
 2. An `<experiment-name>` pod which runs `pgbench` against the database - this is the actual trial pod
 
-For more information on running, monitoring and maintaining experiments, please refer to our [quickstart](https://github.com/redskyops/k8s-experiment/blob/master/docs/quickstart.md) and [experiment lifecycle](https://github.com/gramLabs/k8s-experiment/blob/master/docs/lifecycle.md) documentation 
+For more information on running, monitoring and maintaining experiments, please refer to our [quickstart](https://github.com/redskyops/k8s-experiment/blob/master/docs/quickstart.md) and [experiment lifecycle](https://github.com/gramLabs/k8s-experiment/blob/master/docs/lifecycle.md) documentation.

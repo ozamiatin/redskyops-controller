@@ -1,0 +1,2181 @@
+items:
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T14:57:08Z"
+    generateName: elk-
+    generation: 58
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-445s5
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "265004"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-445s5
+    uid: bd4adddf-e45b-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 1996
+    - name: es_heap_percent
+      value: 37
+    - name: es_memory
+      value: 7520
+    - name: es_replicas
+      value: 3
+    - name: ls_batch_delay
+      value: 212
+    - name: ls_batch_size
+      value: 421
+    - name: ls_cpu
+      value: 2838
+    - name: ls_heap_percent
+      value: 27
+    - name: ls_memory
+      value: 3496
+    - name: ls_replicas
+      value: 3
+    - name: ls_workers
+      value: 7
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zMjc4Mm0gLVhteDI3ODJtIn1dLCJuYW1lIjoiZWxhc3RpY3NlYXJjaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiMTk5Nm0iLCJtZW1vcnkiOiI3NTIwTWkifSwicmVxdWVzdHMiOnsiY3B1IjoiMTk5Nm0iLCJtZW1vcnkiOiI3NTIwTWkifX19XX19fX0=
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDk0M20gLVhtczk0M20ifSx7Im5hbWUiOiJQSVBFTElORV9CQVRDSF9TSVpFIiwidmFsdWUiOiI0MjEifSx7Im5hbWUiOiJQSVBFTElORV9CQVRDSF9ERUxBWSIsInZhbHVlIjoiMjEyIn0seyJuYW1lIjoiUElQRUxJTkVfV09SS0VSUyIsInZhbHVlIjoiNyJ9XSwibmFtZSI6ImxvZ3N0YXNoIiwicmVzb3VyY2VzIjp7ImxpbWl0cyI6eyJjcHUiOiIyODM4bSIsIm1lbW9yeSI6IjM0OTZNaSJ9LCJyZXF1ZXN0cyI6eyJjcHUiOiIyODM4bSIsIm1lbW9yeSI6IjM0OTZNaSJ9fX1dfX19fQ==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+    values:
+    - name: cost
+      value: "463.50486598399993"
+    - name: speed
+      value: "580.4524247619047"
+  status:
+    assignments: es_cpu=1996, es_heap_percent=37, es_memory=7520, es_replicas=3, ls_batch_delay=212,
+      ls_batch_size=421, ls_cpu=2838, ls_heap_percent=27, ls_memory=3496, ls_replicas=3,
+      ls_workers=7
+    completionTime: "2019-10-01T15:02:53Z"
+    conditions:
+    - lastProbeTime: "2019-10-01T15:03:13Z"
+      lastTransitionTime: "2019-10-01T14:57:19Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:03:13Z"
+      lastTransitionTime: "2019-10-01T15:03:13Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T14:57:19Z"
+      lastTransitionTime: "2019-10-01T14:57:19Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T14:59:51Z"
+      lastTransitionTime: "2019-10-01T14:59:51Z"
+      status: "True"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:03:04Z"
+      lastTransitionTime: "2019-10-01T15:03:04Z"
+      status: "True"
+      type: redskyops.dev/trial-observed
+    - lastProbeTime: "2019-10-01T15:03:04Z"
+      lastTransitionTime: "2019-10-01T15:03:04Z"
+      status: "True"
+      type: redskyops.dev/trial-complete
+    startTime: "2019-10-01T14:59:51Z"
+    values: cost=463.50486598399993, speed=580.4524247619047
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T15:21:33Z"
+    generateName: elk-
+    generation: 51
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-9kpdf
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "273202"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-9kpdf
+    uid: 26bf1c92-e45f-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 584
+    - name: es_heap_percent
+      value: 59
+    - name: es_memory
+      value: 6314
+    - name: es_replicas
+      value: 2
+    - name: ls_batch_delay
+      value: 71
+    - name: ls_batch_size
+      value: 215
+    - name: ls_cpu
+      value: 2711
+    - name: ls_heap_percent
+      value: 24
+    - name: ls_memory
+      value: 3866
+    - name: ls_replicas
+      value: 3
+    - name: ls_workers
+      value: 1
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjoyLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zMzcyNW0gLVhteDM3MjVtIn1dLCJuYW1lIjoiZWxhc3RpY3NlYXJjaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiNTg0bSIsIm1lbW9yeSI6IjYzMTRNaSJ9LCJyZXF1ZXN0cyI6eyJjcHUiOiI1ODRtIiwibWVtb3J5IjoiNjMxNE1pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDkyN20gLVhtczkyN20ifSx7Im5hbWUiOiJQSVBFTElORV9CQVRDSF9TSVpFIiwidmFsdWUiOiIyMTUifSx7Im5hbWUiOiJQSVBFTElORV9CQVRDSF9ERUxBWSIsInZhbHVlIjoiNzEifSx7Im5hbWUiOiJQSVBFTElORV9XT1JLRVJTIiwidmFsdWUiOiIxIn1dLCJuYW1lIjoibG9nc3Rhc2giLCJyZXNvdXJjZXMiOnsibGltaXRzIjp7ImNwdSI6IjI3MTFtIiwibWVtb3J5IjoiMzg2Nk1pIn0sInJlcXVlc3RzIjp7ImNwdSI6IjI3MTFtIiwibWVtb3J5IjoiMzg2Nk1pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+    values:
+    - name: cost
+      value: "321.331253568"
+    - name: speed
+      value: "563.7363636363636"
+  status:
+    assignments: es_cpu=584, es_heap_percent=59, es_memory=6314, es_replicas=2, ls_batch_delay=71,
+      ls_batch_size=215, ls_cpu=2711, ls_heap_percent=24, ls_memory=3866, ls_replicas=3,
+      ls_workers=1
+    completionTime: "2019-10-01T15:26:42Z"
+    conditions:
+    - lastProbeTime: "2019-10-01T15:27:06Z"
+      lastTransitionTime: "2019-10-01T15:21:49Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:27:06Z"
+      lastTransitionTime: "2019-10-01T15:27:06Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T15:21:49Z"
+      lastTransitionTime: "2019-10-01T15:21:50Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T15:23:40Z"
+      lastTransitionTime: "2019-10-01T15:23:40Z"
+      status: "True"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:26:53Z"
+      lastTransitionTime: "2019-10-01T15:26:53Z"
+      status: "True"
+      type: redskyops.dev/trial-observed
+    - lastProbeTime: "2019-10-01T15:26:53Z"
+      lastTransitionTime: "2019-10-01T15:26:53Z"
+      status: "True"
+      type: redskyops.dev/trial-complete
+    startTime: "2019-10-01T15:23:40Z"
+    values: cost=321.331253568, speed=563.7363636363636
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T15:45:51Z"
+    generateName: elk-
+    generation: 11
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-ctchn
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "279809"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-ctchn
+    uid: 8be96bcb-e462-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 774
+    - name: es_heap_percent
+      value: 61
+    - name: es_memory
+      value: 6899
+    - name: es_replicas
+      value: 3
+    - name: ls_batch_delay
+      value: 474
+    - name: ls_batch_size
+      value: 317
+    - name: ls_cpu
+      value: 2289
+    - name: ls_heap_percent
+      value: 21
+    - name: ls_memory
+      value: 7544
+    - name: ls_replicas
+      value: 4
+    - name: ls_workers
+      value: 4
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+      wait: true
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+      wait: true
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zNDIwOG0gLVhteDQyMDhtIn1dLCJuYW1lIjoiZWxhc3RpY3NlYXJjaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiNzc0bSIsIm1lbW9yeSI6IjY4OTlNaSJ9LCJyZXF1ZXN0cyI6eyJjcHUiOiI3NzRtIiwibWVtb3J5IjoiNjg5OU1pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+      wait: true
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjo0LCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDE1ODRtIC1YbXMxNTg0bSJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX1NJWkUiLCJ2YWx1ZSI6IjMxNyJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX0RFTEFZIiwidmFsdWUiOiI0NzQifSx7Im5hbWUiOiJQSVBFTElORV9XT1JLRVJTIiwidmFsdWUiOiI0In1dLCJuYW1lIjoibG9nc3Rhc2giLCJyZXNvdXJjZXMiOnsibGltaXRzIjp7ImNwdSI6IjIyODltIiwibWVtb3J5IjoiNzU0NE1pIn0sInJlcXVlc3RzIjp7ImNwdSI6IjIyODltIiwibWVtb3J5IjoiNzU0NE1pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+      wait: true
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+  status:
+    assignments: es_cpu=774, es_heap_percent=61, es_memory=6899, es_replicas=3, ls_batch_delay=474,
+      ls_batch_size=317, ls_cpu=2289, ls_heap_percent=21, ls_memory=7544, ls_replicas=4,
+      ls_workers=4
+    conditions:
+    - lastProbeTime: "2019-10-01T15:46:44Z"
+      lastTransitionTime: "2019-10-01T15:46:01Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:46:44Z"
+      lastTransitionTime: "2019-10-01T15:46:44Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T15:46:02Z"
+      lastTransitionTime: "2019-10-01T15:46:02Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T15:46:02Z"
+      lastTransitionTime: "2019-10-01T15:46:02Z"
+      message: 'StatefulSet/elasticsearch-master is not ready: ContainersNotReady'
+      reason: Waiting
+      status: "False"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:46:02Z"
+      lastTransitionTime: "2019-10-01T15:46:02Z"
+      message: 'StatefulSet stability error for logstash: Unschedulable'
+      reason: WaitFailed
+      status: "True"
+      type: redskyops.dev/trial-failed
+    values: ""
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T15:46:44Z"
+    generateName: elk-
+    generation: 61
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-gz6nc
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "281682"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-gz6nc
+    uid: aba156e5-e462-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 3446
+    - name: es_heap_percent
+      value: 49
+    - name: es_memory
+      value: 4511
+    - name: es_replicas
+      value: 2
+    - name: ls_batch_delay
+      value: 248
+    - name: ls_batch_size
+      value: 466
+    - name: ls_cpu
+      value: 2544
+    - name: ls_heap_percent
+      value: 31
+    - name: ls_memory
+      value: 5360
+    - name: ls_replicas
+      value: 3
+    - name: ls_workers
+      value: 2
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjoyLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zMjIxMG0gLVhteDIyMTBtIn1dLCJuYW1lIjoiZWxhc3RpY3NlYXJjaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiMzQ0Nm0iLCJtZW1vcnkiOiI0NTExTWkifSwicmVxdWVzdHMiOnsiY3B1IjoiMzQ0Nm0iLCJtZW1vcnkiOiI0NTExTWkifX19XX19fX0=
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDE2NjFtIC1YbXMxNjYxbSJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX1NJWkUiLCJ2YWx1ZSI6IjQ2NiJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX0RFTEFZIiwidmFsdWUiOiIyNDgifSx7Im5hbWUiOiJQSVBFTElORV9XT1JLRVJTIiwidmFsdWUiOiIyIn1dLCJuYW1lIjoibG9nc3Rhc2giLCJyZXNvdXJjZXMiOnsibGltaXRzIjp7ImNwdSI6IjI1NDRtIiwibWVtb3J5IjoiNTM2ME1pIn0sInJlcXVlc3RzIjp7ImNwdSI6IjI1NDRtIiwibWVtb3J5IjoiNTM2ME1pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+    values:
+    - name: cost
+      value: "438.992911296"
+    - name: speed
+      value: "597.411128095238"
+  status:
+    assignments: es_cpu=3446, es_heap_percent=49, es_memory=4511, es_replicas=2, ls_batch_delay=248,
+      ls_batch_size=466, ls_cpu=2544, ls_heap_percent=31, ls_memory=5360, ls_replicas=3,
+      ls_workers=2
+    completionTime: "2019-10-01T15:52:31Z"
+    conditions:
+    - lastProbeTime: "2019-10-01T15:52:50Z"
+      lastTransitionTime: "2019-10-01T15:46:53Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:52:50Z"
+      lastTransitionTime: "2019-10-01T15:52:50Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T15:46:53Z"
+      lastTransitionTime: "2019-10-01T15:46:54Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T15:49:29Z"
+      lastTransitionTime: "2019-10-01T15:49:29Z"
+      status: "True"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:52:42Z"
+      lastTransitionTime: "2019-10-01T15:52:42Z"
+      status: "True"
+      type: redskyops.dev/trial-observed
+    - lastProbeTime: "2019-10-01T15:52:42Z"
+      lastTransitionTime: "2019-10-01T15:52:42Z"
+      status: "True"
+      type: redskyops.dev/trial-complete
+    startTime: "2019-10-01T15:49:30Z"
+    values: cost=438.992911296, speed=597.411128095238
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T15:10:02Z"
+    generateName: elk-
+    generation: 56
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-hs6g5
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "269572"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-hs6g5
+    uid: 8abcb2d2-e45d-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 800
+    - name: es_heap_percent
+      value: 41
+    - name: es_memory
+      value: 4003
+    - name: es_replicas
+      value: 3
+    - name: ls_batch_delay
+      value: 479
+    - name: ls_batch_size
+      value: 467
+    - name: ls_cpu
+      value: 3631
+    - name: ls_heap_percent
+      value: 34
+    - name: ls_memory
+      value: 5751
+    - name: ls_replicas
+      value: 2
+    - name: ls_workers
+      value: 5
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zMTY0MW0gLVhteDE2NDFtIn1dLCJuYW1lIjoiZWxhc3RpY3NlYXJjaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiODAwbSIsIm1lbW9yeSI6IjQwMDNNaSJ9LCJyZXF1ZXN0cyI6eyJjcHUiOiI4MDBtIiwibWVtb3J5IjoiNDAwM01pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjoyLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDE5NTVtIC1YbXMxOTU1bSJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX1NJWkUiLCJ2YWx1ZSI6IjQ2NyJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX0RFTEFZIiwidmFsdWUiOiI0NzkifSx7Im5hbWUiOiJQSVBFTElORV9XT1JLRVJTIiwidmFsdWUiOiI1In1dLCJuYW1lIjoibG9nc3Rhc2giLCJyZXNvdXJjZXMiOnsibGltaXRzIjp7ImNwdSI6IjM2MzFtIiwibWVtb3J5IjoiNTc1MU1pIn0sInJlcXVlc3RzIjp7ImNwdSI6IjM2MzFtIiwibWVtb3J5IjoiNTc1MU1pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+    values:
+    - name: cost
+      value: "327.02405804800003"
+    - name: speed
+      value: "303.68450916666666"
+  status:
+    assignments: es_cpu=800, es_heap_percent=41, es_memory=4003, es_replicas=3, ls_batch_delay=479,
+      ls_batch_size=467, ls_cpu=3631, ls_heap_percent=34, ls_memory=5751, ls_replicas=2,
+      ls_workers=5
+    completionTime: "2019-10-01T15:15:50Z"
+    conditions:
+    - lastProbeTime: "2019-10-01T15:16:10Z"
+      lastTransitionTime: "2019-10-01T15:10:15Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:16:10Z"
+      lastTransitionTime: "2019-10-01T15:16:10Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T15:10:15Z"
+      lastTransitionTime: "2019-10-01T15:10:15Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T15:12:47Z"
+      lastTransitionTime: "2019-10-01T15:12:48Z"
+      status: "True"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:16:00Z"
+      lastTransitionTime: "2019-10-01T15:16:01Z"
+      status: "True"
+      type: redskyops.dev/trial-observed
+    - lastProbeTime: "2019-10-01T15:16:01Z"
+      lastTransitionTime: "2019-10-01T15:16:01Z"
+      status: "True"
+      type: redskyops.dev/trial-complete
+    startTime: "2019-10-01T15:12:48Z"
+    values: cost=327.02405804800003, speed=303.68450916666666
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T14:56:47Z"
+    generateName: elk-
+    generation: 6
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-lzrft
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "263075"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-lzrft
+    uid: b14f5aff-e45b-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 3363
+    - name: es_heap_percent
+      value: 33
+    - name: es_memory
+      value: 2366
+    - name: es_replicas
+      value: 3
+    - name: ls_batch_delay
+      value: 81
+    - name: ls_batch_size
+      value: 473
+    - name: ls_cpu
+      value: 3308
+    - name: ls_heap_percent
+      value: 31
+    - name: ls_memory
+      value: 3533
+    - name: ls_replicas
+      value: 3
+    - name: ls_workers
+      value: 6
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+  status:
+    assignments: ""
+    conditions:
+    - lastProbeTime: "2019-10-01T14:57:07Z"
+      lastTransitionTime: "2019-10-01T14:56:51Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T14:57:07Z"
+      lastTransitionTime: "2019-10-01T14:57:07Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T14:56:51Z"
+      lastTransitionTime: "2019-10-01T14:56:51Z"
+      message: Setup job has a failed container
+      reason: SetupJobFailed
+      status: "True"
+      type: redskyops.dev/trial-failed
+    values: ""
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T15:39:22Z"
+    generateName: elk-
+    generation: 59
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-mvb54
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "279121"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-mvb54
+    uid: a3ca939c-e461-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 1895
+    - name: es_heap_percent
+      value: 78
+    - name: es_memory
+      value: 4463
+    - name: es_replicas
+      value: 2
+    - name: ls_batch_delay
+      value: 161
+    - name: ls_batch_size
+      value: 70
+    - name: ls_cpu
+      value: 1632
+    - name: ls_heap_percent
+      value: 23
+    - name: ls_memory
+      value: 5897
+    - name: ls_replicas
+      value: 3
+    - name: ls_workers
+      value: 3
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjoyLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zMzQ4MW0gLVhteDM0ODFtIn1dLCJuYW1lIjoiZWxhc3RpY3NlYXJjaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiMTg5NW0iLCJtZW1vcnkiOiI0NDYzTWkifSwicmVxdWVzdHMiOnsiY3B1IjoiMTg5NW0iLCJtZW1vcnkiOiI0NDYzTWkifX19XX19fX0=
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDEzNTZtIC1YbXMxMzU2bSJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX1NJWkUiLCJ2YWx1ZSI6IjcwIn0seyJuYW1lIjoiUElQRUxJTkVfQkFUQ0hfREVMQVkiLCJ2YWx1ZSI6IjE2MSJ9LHsibmFtZSI6IlBJUEVMSU5FX1dPUktFUlMiLCJ2YWx1ZSI6IjMifV0sIm5hbWUiOiJsb2dzdGFzaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiMTYzMm0iLCJtZW1vcnkiOiI1ODk3TWkifSwicmVxdWVzdHMiOnsiY3B1IjoiMTYzMm0iLCJtZW1vcnkiOiI1ODk3TWkifX19XX19fX0=
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+    values:
+    - name: cost
+      value: "315.322689216"
+    - name: speed
+      value: "585.7995653333332"
+  status:
+    assignments: es_cpu=1895, es_heap_percent=78, es_memory=4463, es_replicas=2, ls_batch_delay=161,
+      ls_batch_size=70, ls_cpu=1632, ls_heap_percent=23, ls_memory=5897, ls_replicas=3,
+      ls_workers=3
+    completionTime: "2019-10-01T15:45:25Z"
+    conditions:
+    - lastProbeTime: "2019-10-01T15:45:51Z"
+      lastTransitionTime: "2019-10-01T15:39:31Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:45:51Z"
+      lastTransitionTime: "2019-10-01T15:45:51Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T15:39:31Z"
+      lastTransitionTime: "2019-10-01T15:39:31Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T15:42:23Z"
+      lastTransitionTime: "2019-10-01T15:42:23Z"
+      status: "True"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:45:35Z"
+      lastTransitionTime: "2019-10-01T15:45:36Z"
+      status: "True"
+      type: redskyops.dev/trial-observed
+    - lastProbeTime: "2019-10-01T15:45:36Z"
+      lastTransitionTime: "2019-10-01T15:45:36Z"
+      status: "True"
+      type: redskyops.dev/trial-complete
+    startTime: "2019-10-01T15:42:23Z"
+    values: cost=315.322689216, speed=585.7995653333332
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T15:03:13Z"
+    generateName: elk-
+    generation: 45
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-q8sjn
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "266814"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-q8sjn
+    uid: 970a2594-e45c-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 3994
+    - name: es_heap_percent
+      value: 63
+    - name: es_memory
+      value: 3720
+    - name: es_replicas
+      value: 3
+    - name: ls_batch_delay
+      value: 223
+    - name: ls_batch_size
+      value: 204
+    - name: ls_cpu
+      value: 2495
+    - name: ls_heap_percent
+      value: 28
+    - name: ls_memory
+      value: 6669
+    - name: ls_replicas
+      value: 3
+    - name: ls_workers
+      value: 8
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zMjM0M20gLVhteDIzNDNtIn1dLCJuYW1lIjoiZWxhc3RpY3NlYXJjaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiMzk5NG0iLCJtZW1vcnkiOiIzNzIwTWkifSwicmVxdWVzdHMiOnsiY3B1IjoiMzk5NG0iLCJtZW1vcnkiOiIzNzIwTWkifX19XX19fX0=
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDE4NjdtIC1YbXMxODY3bSJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX1NJWkUiLCJ2YWx1ZSI6IjIwNCJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX0RFTEFZIiwidmFsdWUiOiIyMjMifSx7Im5hbWUiOiJQSVBFTElORV9XT1JLRVJTIiwidmFsdWUiOiI4In1dLCJuYW1lIjoibG9nc3Rhc2giLCJyZXNvdXJjZXMiOnsibGltaXRzIjp7ImNwdSI6IjI0OTVtIiwibWVtb3J5IjoiNjY2OU1pIn0sInJlcXVlc3RzIjp7ImNwdSI6IjI0OTVtIiwibWVtb3J5IjoiNjY2OU1pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+    values:
+    - name: cost
+      value: "566.8177516160001"
+    - name: speed
+      value: "582.9454545454545"
+  status:
+    assignments: es_cpu=3994, es_heap_percent=63, es_memory=3720, es_replicas=3, ls_batch_delay=223,
+      ls_batch_size=204, ls_cpu=2495, ls_heap_percent=28, ls_memory=6669, ls_replicas=3,
+      ls_workers=8
+    completionTime: "2019-10-01T15:08:23Z"
+    conditions:
+    - lastProbeTime: "2019-10-01T15:08:42Z"
+      lastTransitionTime: "2019-10-01T15:03:26Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:08:42Z"
+      lastTransitionTime: "2019-10-01T15:08:42Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T15:03:27Z"
+      lastTransitionTime: "2019-10-01T15:03:27Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T15:05:20Z"
+      lastTransitionTime: "2019-10-01T15:05:21Z"
+      status: "True"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:08:33Z"
+      lastTransitionTime: "2019-10-01T15:08:33Z"
+      status: "True"
+      type: redskyops.dev/trial-observed
+    - lastProbeTime: "2019-10-01T15:08:33Z"
+      lastTransitionTime: "2019-10-01T15:08:33Z"
+      status: "True"
+      type: redskyops.dev/trial-complete
+    startTime: "2019-10-01T15:05:21Z"
+    values: cost=566.8177516160001, speed=582.9454545454545
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T15:33:58Z"
+    generateName: elk-
+    generation: 47
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-r5lrd
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "277061"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-r5lrd
+    uid: e2f98b07-e460-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 2411
+    - name: es_heap_percent
+      value: 55
+    - name: es_memory
+      value: 3837
+    - name: es_replicas
+      value: 3
+    - name: ls_batch_delay
+      value: 379
+    - name: ls_batch_size
+      value: 65
+    - name: ls_cpu
+      value: 969
+    - name: ls_heap_percent
+      value: 35
+    - name: ls_memory
+      value: 6381
+    - name: ls_replicas
+      value: 4
+    - name: ls_workers
+      value: 4
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zMjExMG0gLVhteDIxMTBtIn1dLCJuYW1lIjoiZWxhc3RpY3NlYXJjaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiMjQxMW0iLCJtZW1vcnkiOiIzODM3TWkifSwicmVxdWVzdHMiOnsiY3B1IjoiMjQxMW0iLCJtZW1vcnkiOiIzODM3TWkifX19XX19fX0=
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjo0LCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDIyMzNtIC1YbXMyMjMzbSJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX1NJWkUiLCJ2YWx1ZSI6IjY1In0seyJuYW1lIjoiUElQRUxJTkVfQkFUQ0hfREVMQVkiLCJ2YWx1ZSI6IjM3OSJ9LHsibmFtZSI6IlBJUEVMSU5FX1dPUktFUlMiLCJ2YWx1ZSI6IjQifV0sIm5hbWUiOiJsb2dzdGFzaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiOTY5bSIsIm1lbW9yeSI6IjYzODFNaSJ9LCJyZXF1ZXN0cyI6eyJjcHUiOiI5NjltIiwibWVtb3J5IjoiNjM4MU1pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+    values:
+    - name: cost
+      value: "401.40088351999987"
+    - name: speed
+      value: "529.7454545454545"
+  status:
+    assignments: es_cpu=2411, es_heap_percent=55, es_memory=3837, es_replicas=3, ls_batch_delay=379,
+      ls_batch_size=65, ls_cpu=969, ls_heap_percent=35, ls_memory=6381, ls_replicas=4,
+      ls_workers=4
+    completionTime: "2019-10-01T15:39:01Z"
+    conditions:
+    - lastProbeTime: "2019-10-01T15:39:22Z"
+      lastTransitionTime: "2019-10-01T15:34:06Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:39:22Z"
+      lastTransitionTime: "2019-10-01T15:39:22Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T15:34:07Z"
+      lastTransitionTime: "2019-10-01T15:34:07Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T15:35:59Z"
+      lastTransitionTime: "2019-10-01T15:35:59Z"
+      status: "True"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:39:12Z"
+      lastTransitionTime: "2019-10-01T15:39:12Z"
+      status: "True"
+      type: redskyops.dev/trial-observed
+    - lastProbeTime: "2019-10-01T15:39:12Z"
+      lastTransitionTime: "2019-10-01T15:39:12Z"
+      status: "True"
+      type: redskyops.dev/trial-complete
+    startTime: "2019-10-01T15:35:59Z"
+    values: cost=401.40088351999987, speed=529.7454545454545
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T15:08:42Z"
+    generateName: elk-
+    generation: 27
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-vbgtd
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "267652"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-vbgtd
+    uid: 5b7d8e99-e45d-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 3361
+    - name: es_heap_percent
+      value: 30
+    - name: es_memory
+      value: 6647
+    - name: es_replicas
+      value: 3
+    - name: ls_batch_delay
+      value: 313
+    - name: ls_batch_size
+      value: 417
+    - name: ls_cpu
+      value: 2388
+    - name: ls_heap_percent
+      value: 31
+    - name: ls_memory
+      value: 7631
+    - name: ls_replicas
+      value: 3
+    - name: ls_workers
+      value: 7
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+      wait: true
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+      wait: true
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zMTk5NG0gLVhteDE5OTRtIn1dLCJuYW1lIjoiZWxhc3RpY3NlYXJjaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiMzM2MW0iLCJtZW1vcnkiOiI2NjQ3TWkifSwicmVxdWVzdHMiOnsiY3B1IjoiMzM2MW0iLCJtZW1vcnkiOiI2NjQ3TWkifX19XX19fX0=
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+      wait: true
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDIzNjVtIC1YbXMyMzY1bSJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX1NJWkUiLCJ2YWx1ZSI6IjQxNyJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX0RFTEFZIiwidmFsdWUiOiIzMTMifSx7Im5hbWUiOiJQSVBFTElORV9XT1JLRVJTIiwidmFsdWUiOiI3In1dLCJuYW1lIjoibG9nc3Rhc2giLCJyZXNvdXJjZXMiOnsibGltaXRzIjp7ImNwdSI6IjIzODhtIiwibWVtb3J5IjoiNzYzMU1pIn0sInJlcXVlc3RzIjp7ImNwdSI6IjIzODhtIiwibWVtb3J5IjoiNzYzMU1pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+  status:
+    assignments: es_cpu=3361, es_heap_percent=30, es_memory=6647, es_replicas=3, ls_batch_delay=313,
+      ls_batch_size=417, ls_cpu=2388, ls_heap_percent=31, ls_memory=7631, ls_replicas=3,
+      ls_workers=7
+    conditions:
+    - lastProbeTime: "2019-10-01T15:10:02Z"
+      lastTransitionTime: "2019-10-01T15:09:00Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:10:02Z"
+      lastTransitionTime: "2019-10-01T15:10:02Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T15:09:00Z"
+      lastTransitionTime: "2019-10-01T15:09:01Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T15:09:53Z"
+      lastTransitionTime: "2019-10-01T15:09:01Z"
+      message: 'StatefulSet/elasticsearch-master is not ready: ContainersNotReady'
+      reason: Waiting
+      status: "False"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:09:53Z"
+      lastTransitionTime: "2019-10-01T15:09:53Z"
+      message: 'StatefulSet stability error for elasticsearch-data: Unschedulable'
+      reason: WaitFailed
+      status: "True"
+      type: redskyops.dev/trial-failed
+    values: ""
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T15:16:10Z"
+    generateName: elk-
+    generation: 49
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-w4j87
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "271361"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-w4j87
+    uid: 66897ca9-e45e-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 2141
+    - name: es_heap_percent
+      value: 22
+    - name: es_memory
+      value: 3073
+    - name: es_replicas
+      value: 2
+    - name: ls_batch_delay
+      value: 63
+    - name: ls_batch_size
+      value: 269
+    - name: ls_cpu
+      value: 2939
+    - name: ls_heap_percent
+      value: 28
+    - name: ls_memory
+      value: 4321
+    - name: ls_replicas
+      value: 4
+    - name: ls_workers
+      value: 6
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjoyLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zNjc2bSAtWG14Njc2bSJ9XSwibmFtZSI6ImVsYXN0aWNzZWFyY2giLCJyZXNvdXJjZXMiOnsibGltaXRzIjp7ImNwdSI6IjIxNDFtIiwibWVtb3J5IjoiMzA3M01pIn0sInJlcXVlc3RzIjp7ImNwdSI6IjIxNDFtIiwibWVtb3J5IjoiMzA3M01pIn19fV19fX19
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjo0LCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDEyMDltIC1YbXMxMjA5bSJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX1NJWkUiLCJ2YWx1ZSI6IjI2OSJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX0RFTEFZIiwidmFsdWUiOiI2MyJ9LHsibmFtZSI6IlBJUEVMSU5FX1dPUktFUlMiLCJ2YWx1ZSI6IjYifV0sIm5hbWUiOiJsb2dzdGFzaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiMjkzOW0iLCJtZW1vcnkiOiI0MzIxTWkifSwicmVxdWVzdHMiOnsiY3B1IjoiMjkzOW0iLCJtZW1vcnkiOiI0MzIxTWkifX19XX19fX0=
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+    values:
+    - name: cost
+      value: "467.04125408"
+    - name: speed
+      value: "594.6"
+  status:
+    assignments: es_cpu=2141, es_heap_percent=22, es_memory=3073, es_replicas=2, ls_batch_delay=63,
+      ls_batch_size=269, ls_cpu=2939, ls_heap_percent=28, ls_memory=4321, ls_replicas=4,
+      ls_workers=6
+    completionTime: "2019-10-01T15:21:15Z"
+    conditions:
+    - lastProbeTime: "2019-10-01T15:21:33Z"
+      lastTransitionTime: "2019-10-01T15:16:23Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:21:33Z"
+      lastTransitionTime: "2019-10-01T15:21:33Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T15:16:23Z"
+      lastTransitionTime: "2019-10-01T15:16:23Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T15:18:14Z"
+      lastTransitionTime: "2019-10-01T15:18:14Z"
+      status: "True"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:21:26Z"
+      lastTransitionTime: "2019-10-01T15:21:26Z"
+      status: "True"
+      type: redskyops.dev/trial-observed
+    - lastProbeTime: "2019-10-01T15:21:26Z"
+      lastTransitionTime: "2019-10-01T15:21:26Z"
+      status: "True"
+      type: redskyops.dev/trial-complete
+    startTime: "2019-10-01T15:18:14Z"
+    values: cost=467.04125408, speed=594.6
+- apiVersion: redskyops.dev/v1alpha1
+  kind: Trial
+  metadata:
+    creationTimestamp: "2019-10-01T15:27:07Z"
+    generateName: elk-
+    generation: 64
+    labels:
+      redskyops.dev/experiment: elk
+    name: elk-wgjcb
+    namespace: default
+    ownerReferences:
+    - apiVersion: redskyops.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Experiment
+      name: elk
+      uid: b0fe9647-e45b-11e9-b901-42010a800081
+    resourceVersion: "275299"
+    selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/trials/elk-wgjcb
+    uid: edb10e87-e45f-11e9-b901-42010a800081
+  spec:
+    approximateRuntime: 3m0s
+    assignments:
+    - name: es_cpu
+      value: 3156
+    - name: es_heap_percent
+      value: 43
+    - name: es_memory
+      value: 6187
+    - name: es_replicas
+      value: 3
+    - name: ls_batch_delay
+      value: 294
+    - name: ls_batch_size
+      value: 22
+    - name: ls_cpu
+      value: 3305
+    - name: ls_heap_percent
+      value: 25
+    - name: ls_memory
+      value: 5093
+    - name: ls_replicas
+      value: 2
+    - name: ls_workers
+      value: 7
+    experimentRef:
+      apiVersion: redskyops.dev/v1alpha1
+      kind: Experiment
+      name: elk
+      namespace: default
+    patchOperations:
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-master
+        namespace: default
+    - data: bnVsbA==
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: elasticsearch-client
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjozLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkVTX0pBVkFfT1BUUyIsInZhbHVlIjoiLURqYXZhLm5ldC5wcmVmZXJJUHY0U3RhY2s9dHJ1ZSAtWG1zMjY2MG0gLVhteDI2NjBtIn1dLCJuYW1lIjoiZWxhc3RpY3NlYXJjaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiMzE1Nm0iLCJtZW1vcnkiOiI2MTg3TWkifSwicmVxdWVzdHMiOnsiY3B1IjoiMzE1Nm0iLCJtZW1vcnkiOiI2MTg3TWkifX19XX19fX0=
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: elasticsearch-data
+        namespace: default
+    - data: eyJzcGVjIjp7InJlcGxpY2FzIjoyLCJ0ZW1wbGF0ZSI6eyJzcGVjIjp7ImNvbnRhaW5lcnMiOlt7ImVudiI6W3sibmFtZSI6IkxTX0pBVkFfT1BUUyIsInZhbHVlIjoiLVhteDEyNzNtIC1YbXMxMjczbSJ9LHsibmFtZSI6IlBJUEVMSU5FX0JBVENIX1NJWkUiLCJ2YWx1ZSI6IjIyIn0seyJuYW1lIjoiUElQRUxJTkVfQkFUQ0hfREVMQVkiLCJ2YWx1ZSI6IjI5NCJ9LHsibmFtZSI6IlBJUEVMSU5FX1dPUktFUlMiLCJ2YWx1ZSI6IjcifV0sIm5hbWUiOiJsb2dzdGFzaCIsInJlc291cmNlcyI6eyJsaW1pdHMiOnsiY3B1IjoiMzMwNW0iLCJtZW1vcnkiOiI1MDkzTWkifSwicmVxdWVzdHMiOnsiY3B1IjoiMzMwNW0iLCJtZW1vcnkiOiI1MDkzTWkifX19XX19fX0=
+      patchType: application/strategic-merge-patch+json
+      targetRef:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        name: logstash
+        namespace: default
+    setupServiceAccountName: redsky
+    setupTasks:
+    - name: monitoring
+      volumeMounts:
+      - mountPath: /workspace/base/resources
+        name: monitoring
+    - helmChart: stable/elasticsearch
+      helmValues:
+      - name: cluster.name
+        value: elk-demo
+      - name: data.terminationGracePeriodSeconds
+        value: "5"
+      - name: data.podManagementPolicy
+        value: Parallel
+      - name: data.replicas
+        value: '{{ .Values.es_replicas }}'
+      - name: data.heapSize
+        value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+      - name: data.resources.limits.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.limits.memory
+        value: '{{ .Values.es_memory }}Mi'
+      - name: data.resources.requests.cpu
+        value: '{{ .Values.es_cpu }}m'
+      - name: data.resources.requests.memory
+        value: '{{ .Values.es_memory }}Mi'
+      name: elasticsearch
+    - helmChart: stable/elasticsearch-exporter
+      helmValues:
+      - name: es.uri
+        value: http://elasticsearch-client:9200
+      name: elasticsearch-exporter
+    - helmChart: stable/logstash
+      helmValues:
+      - name: replicaCount
+        value: '{{ .Values.ls_replicas }}'
+      - name: logstashJavaOpts
+        value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+          percent .Values.ls_memory .Values.ls_heap_percent }}m
+      - name: resources.limits.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.limits.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: resources.requests.cpu
+        value: '{{ .Values.ls_cpu }}m'
+      - name: resources.requests.memory
+        value: '{{ .Values.ls_memory }}Mi'
+      - name: extraEnv[0].name
+        value: PIPELINE_BATCH_SIZE
+      - forceString: true
+        name: extraEnv[0].value
+        value: '{{ .Values.ls_batch_size }}'
+      - name: extraEnv[1].name
+        value: PIPELINE_BATCH_DELAY
+      - forceString: true
+        name: extraEnv[1].value
+        value: '{{ .Values.ls_batch_delay }}'
+      - name: extraEnv[2].name
+        value: PIPELINE_WORKERS
+      - forceString: true
+        name: extraEnv[2].value
+        value: '{{ .Values.ls_workers }}'
+      helmValuesFrom:
+      - configMap:
+          name: logstash
+      name: logstash
+    setupVolumes:
+    - configMap:
+        name: monitoring
+      name: monitoring
+    values:
+    - name: cost
+      value: "484.6470898560001"
+    - name: speed
+      value: "283.95381071428574"
+  status:
+    assignments: es_cpu=3156, es_heap_percent=43, es_memory=6187, es_replicas=3, ls_batch_delay=294,
+      ls_batch_size=22, ls_cpu=3305, ls_heap_percent=25, ls_memory=5093, ls_replicas=2,
+      ls_workers=7
+    completionTime: "2019-10-01T15:33:36Z"
+    conditions:
+    - lastProbeTime: "2019-10-01T15:33:58Z"
+      lastTransitionTime: "2019-10-01T15:27:16Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-created
+    - lastProbeTime: "2019-10-01T15:33:58Z"
+      lastTransitionTime: "2019-10-01T15:33:58Z"
+      status: "True"
+      type: redskyops.dev/trial-setup-deleted
+    - lastProbeTime: "2019-10-01T15:27:16Z"
+      lastTransitionTime: "2019-10-01T15:27:16Z"
+      status: "True"
+      type: redskyops.dev/trial-patched
+    - lastProbeTime: "2019-10-01T15:30:34Z"
+      lastTransitionTime: "2019-10-01T15:30:34Z"
+      status: "True"
+      type: redskyops.dev/trial-stable
+    - lastProbeTime: "2019-10-01T15:33:46Z"
+      lastTransitionTime: "2019-10-01T15:33:46Z"
+      status: "True"
+      type: redskyops.dev/trial-observed
+    - lastProbeTime: "2019-10-01T15:33:46Z"
+      lastTransitionTime: "2019-10-01T15:33:46Z"
+      status: "True"
+      type: redskyops.dev/trial-complete
+    startTime: "2019-10-01T15:30:34Z"
+    values: cost=484.6470898560001, speed=283.95381071428574
+metadata:
+  resourceVersion: "292088"
+  selfLink: /apis/redskyops.dev/v1alpha1/trials

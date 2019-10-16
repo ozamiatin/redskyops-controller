@@ -1,0 +1,289 @@
+experiments:
+- _metadata:
+    Last-Modified:
+    - Wed, 25 Sep 2019 12:25:51 GMT
+    Link:
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/elk-v4>;rel=self
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/elk-v4/trials/>;rel=https://carbonrelay.com/rel/trials
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/elk-v4/trials/next>;rel=https://carbonrelay.com/rel/nextTrial
+  displayName: elk-v4
+  metrics:
+  - minimize: true
+    name: cost
+  - name: speed
+  optimization:
+    burnIn: 10
+    experimentBudget: 40
+    parallelTrials: 1
+  parameters:
+  - bounds:
+      max: 4000
+      min: 500
+    name: es_cpu
+    type: int
+  - bounds:
+      max: 80
+      min: 20
+    name: es_heap_percent
+    type: int
+  - bounds:
+      max: 8000
+      min: 2000
+    name: es_memory
+    type: int
+  - bounds:
+      max: 4
+      min: 2
+    name: es_replicas
+    type: int
+  - bounds:
+      max: 500
+      min: 5
+    name: ls_batch_delay
+    type: int
+  - bounds:
+      max: 500
+      min: 5
+    name: ls_batch_size
+    type: int
+  - bounds:
+      max: 4000
+      min: 500
+    name: ls_cpu
+    type: int
+  - bounds:
+      max: 35
+      min: 20
+    name: ls_heap_percent
+    type: int
+  - bounds:
+      max: 8000
+      min: 3000
+    name: ls_memory
+    type: int
+  - bounds:
+      max: 4
+      min: 2
+    name: ls_replicas
+    type: int
+  - bounds:
+      max: 8
+      min: 1
+    name: ls_workers
+    type: int
+- _metadata:
+    Last-Modified:
+    - Fri, 06 Sep 2019 18:39:32 GMT
+    Link:
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/check-defaults-ULRMRHZC>;rel=self
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/check-defaults-ULRMRHZC/trials/>;rel=https://carbonrelay.com/rel/trials
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/check-defaults-ULRMRHZC/trials/next>;rel=https://carbonrelay.com/rel/nextTrial
+  displayName: ELK demo
+  metrics:
+  - minimize: true
+    name: cost
+  optimization:
+    burnIn: 10
+    experimentBudget: 40
+    parallelTrials: 1
+  parameters:
+  - bounds:
+      max: 3.5
+      min: 0.5
+    name: es_cpu
+    type: double
+  - bounds:
+      max: 12000
+      min: 2000
+    name: es_memory
+    type: int
+  - bounds:
+      max: 4
+      min: 2
+    name: es_replicas
+    type: int
+  - bounds:
+      max: 12000
+      min: 2000
+    name: ls_memory
+    type: int
+- _metadata:
+    Last-Modified:
+    - Fri, 06 Sep 2019 18:39:29 GMT
+    Link:
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/valid-experiment-ULRMRHZC>;rel=self
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/valid-experiment-ULRMRHZC/trials/>;rel=https://carbonrelay.com/rel/trials
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/valid-experiment-ULRMRHZC/trials/next>;rel=https://carbonrelay.com/rel/nextTrial
+  displayName: ELK demo
+  metrics:
+  - minimize: true
+    name: cost
+  optimization:
+    burnIn: 5
+    experimentBudget: 50
+    parallelTrials: 4
+  parameters:
+  - bounds:
+      max: 3.5
+      min: 0.5
+    name: es_cpu
+    type: double
+  - bounds:
+      max: 12000
+      min: 2000
+    name: es_memory
+    type: int
+  - bounds:
+      max: 4
+      min: 2
+    name: es_replicas
+    type: int
+  - bounds:
+      max: 12000
+      min: 2000
+    name: ls_memory
+    type: int
+- _metadata:
+    Last-Modified:
+    - Fri, 06 Sep 2019 18:01:50 GMT
+    Link:
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/check-defaults-KFXPYKTW>;rel=self
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/check-defaults-KFXPYKTW/trials/>;rel=https://carbonrelay.com/rel/trials
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/check-defaults-KFXPYKTW/trials/next>;rel=https://carbonrelay.com/rel/nextTrial
+  displayName: ELK demo
+  metrics:
+  - minimize: true
+    name: cost
+  optimization:
+    burnIn: 10
+    experimentBudget: 40
+    parallelTrials: 1
+  parameters:
+  - bounds:
+      max: 3.5
+      min: 0.5
+    name: es_cpu
+    type: double
+  - bounds:
+      max: 12000
+      min: 2000
+    name: es_memory
+    type: int
+  - bounds:
+      max: 4
+      min: 2
+    name: es_replicas
+    type: int
+  - bounds:
+      max: 12000
+      min: 2000
+    name: ls_memory
+    type: int
+- _metadata:
+    Last-Modified:
+    - Fri, 06 Sep 2019 18:01:48 GMT
+    Link:
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/valid-experiment-KFXPYKTW>;rel=self
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/valid-experiment-KFXPYKTW/trials/>;rel=https://carbonrelay.com/rel/trials
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/valid-experiment-KFXPYKTW/trials/next>;rel=https://carbonrelay.com/rel/nextTrial
+  displayName: ELK demo
+  metrics:
+  - minimize: true
+    name: cost
+  optimization:
+    burnIn: 5
+    experimentBudget: 50
+    parallelTrials: 4
+  parameters:
+  - bounds:
+      max: 3.5
+      min: 0.5
+    name: es_cpu
+    type: double
+  - bounds:
+      max: 12000
+      min: 2000
+    name: es_memory
+    type: int
+  - bounds:
+      max: 4
+      min: 2
+    name: es_replicas
+    type: int
+  - bounds:
+      max: 12000
+      min: 2000
+    name: ls_memory
+    type: int
+- _metadata:
+    Last-Modified:
+    - Fri, 06 Sep 2019 17:56:16 GMT
+    Link:
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/check-defaults-XRYCHYJW>;rel=self
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/check-defaults-XRYCHYJW/trials/>;rel=https://carbonrelay.com/rel/trials
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/check-defaults-XRYCHYJW/trials/next>;rel=https://carbonrelay.com/rel/nextTrial
+  displayName: ELK demo
+  metrics:
+  - minimize: true
+    name: cost
+  optimization:
+    burnIn: 10
+    experimentBudget: 40
+    parallelTrials: 1
+  parameters:
+  - bounds:
+      max: 3.5
+      min: 0.5
+    name: es_cpu
+    type: double
+  - bounds:
+      max: 12000
+      min: 2000
+    name: es_memory
+    type: int
+  - bounds:
+      max: 4
+      min: 2
+    name: es_replicas
+    type: int
+  - bounds:
+      max: 12000
+      min: 2000
+    name: ls_memory
+    type: int
+- _metadata:
+    Last-Modified:
+    - Fri, 06 Sep 2019 17:56:15 GMT
+    Link:
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/valid-experiment-XRYCHYJW>;rel=self
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/valid-experiment-XRYCHYJW/trials/>;rel=https://carbonrelay.com/rel/trials
+    - <https://rso-staging-b.carbonrelay.dev/api/experiments/valid-experiment-XRYCHYJW/trials/next>;rel=https://carbonrelay.com/rel/nextTrial
+  displayName: ELK demo
+  metrics:
+  - minimize: true
+    name: cost
+  optimization:
+    burnIn: 5
+    experimentBudget: 50
+    parallelTrials: 4
+  parameters:
+  - bounds:
+      max: 3.5
+      min: 0.5
+    name: es_cpu
+    type: double
+  - bounds:
+      max: 12000
+      min: 2000
+    name: es_memory
+    type: int
+  - bounds:
+      max: 4
+      min: 2
+    name: es_replicas
+    type: int
+  - bounds:
+      max: 12000
+      min: 2000
+    name: ls_memory
+    type: int

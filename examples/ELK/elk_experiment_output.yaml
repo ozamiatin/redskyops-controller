@@ -1,0 +1,209 @@
+apiVersion: redskyops.dev/v1alpha1
+kind: Experiment
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"redskyops.dev/v1alpha1","kind":"Experiment","metadata":{"annotations":{},"name":"elk","namespace":"default"},"spec":{"metrics":[{"minimize":true,"name":"cost","query":"scalar((sum(container_cpu_allocation{namespace=\"{{ .Trial.Namespace }}\"}))*22 + (sum(container_memory_allocation_bytes{namespace=\"{{ .Trial.Namespace }}\"})/1000000000)*3)","selector":{"matchLabels":{"app":"prometheus"}},"type":"prometheus"},{"minimize":false,"name":"speed","query":"scalar(sum by (cluster)(rate(elasticsearch_indices_docs_primary[2m])))","selector":{"matchLabels":{"app":"prometheus"}},"type":"prometheus"}],"parameters":[{"max":8000,"min":2000,"name":"es_memory"},{"max":4000,"min":500,"name":"es_cpu"},{"max":4,"min":2,"name":"es_replicas"},{"max":8000,"min":3000,"name":"ls_memory"},{"max":4000,"min":500,"name":"ls_cpu"},{"max":4,"min":2,"name":"ls_replicas"},{"max":8,"min":1,"name":"ls_workers"},{"max":500,"min":5,"name":"ls_batch_size"},{"max":500,"min":5,"name":"ls_batch_delay"},{"max":80,"min":20,"name":"es_heap_percent"},{"max":35,"min":20,"name":"ls_heap_percent"}],"patches":[{"patch":"","targetRef":{"apiVersion":"apps/v1","kind":"StatefulSet","name":"elasticsearch-master"}},{"patch":"","targetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"elasticsearch-client"}},{"patch":"spec:\n  replicas: {{ .Values.es_replicas }}\n  template:\n    spec:\n      containers:\n      - name: elasticsearch\n        env:\n        - name: ES_JAVA_OPTS\n          value: \"-Djava.net.preferIPv4Stack=true -Xms{{ percent .Values.es_memory .Values.es_heap_percent }}m -Xmx{{ percent .Values.es_memory .Values.es_heap_percent }}m\"\n        resources:\n          limits:\n            cpu: \"{{ .Values.es_cpu }}m\"\n            memory: \"{{ .Values.es_memory }}Mi\"\n          requests:\n            cpu: \"{{ .Values.es_cpu }}m\"\n            memory: \"{{ .Values.es_memory }}Mi\"\n","targetRef":{"apiVersion":"apps/v1","kind":"StatefulSet","name":"elasticsearch-data"}},{"patch":"spec:\n  replicas: {{ .Values.ls_replicas }}\n  template:\n    spec:\n      containers:\n      - name: logstash\n        env:\n        - name: LS_JAVA_OPTS\n          value: \"-Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{ percent .Values.ls_memory .Values.ls_heap_percent }}m\"\n        - name: PIPELINE_BATCH_SIZE\n          value: \"{{ .Values.ls_batch_size }}\"\n        - name: PIPELINE_BATCH_DELAY\n          value: \"{{ .Values.ls_batch_delay }}\"\n        - name: PIPELINE_WORKERS\n          value: \"{{ .Values.ls_workers }}\"\n        resources:\n          limits:\n            cpu: \"{{ .Values.ls_cpu }}m\"\n            memory: \"{{ .Values.ls_memory }}Mi\"\n          requests:\n            cpu: \"{{ .Values.ls_cpu }}m\"\n            memory: \"{{ .Values.ls_memory }}Mi\"\n","targetRef":{"apiVersion":"apps/v1","kind":"StatefulSet","name":"logstash"}}],"template":{"spec":{"approximateRuntime":"3m","setupServiceAccountName":"redsky","setupTasks":[{"name":"monitoring","volumeMounts":[{"mountPath":"/workspace/base/resources","name":"monitoring"}]},{"helmChart":"stable/elasticsearch","helmValues":[{"name":"cluster.name","value":"elk-demo"},{"name":"data.terminationGracePeriodSeconds","value":"5"},{"name":"data.podManagementPolicy","value":"Parallel"},{"name":"data.replicas","value":"{{ .Values.es_replicas }}"},{"name":"data.heapSize","value":"{{ percent .Values.es_memory .Values.es_heap_percent }}m"},{"name":"data.resources.limits.cpu","value":"{{ .Values.es_cpu }}m"},{"name":"data.resources.limits.memory","value":"{{ .Values.es_memory }}Mi"},{"name":"data.resources.requests.cpu","value":"{{ .Values.es_cpu }}m"},{"name":"data.resources.requests.memory","value":"{{ .Values.es_memory }}Mi"}],"name":"elasticsearch"},{"helmChart":"stable/elasticsearch-exporter","helmValues":[{"name":"es.uri","value":"http://elasticsearch-client:9200"}],"name":"elasticsearch-exporter"},{"helmChart":"stable/logstash","helmValues":[{"name":"replicaCount","value":"{{ .Values.ls_replicas }}"},{"name":"logstashJavaOpts","value":"-Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{ percent .Values.ls_memory .Values.ls_heap_percent }}m"},{"name":"resources.limits.cpu","value":"{{ .Values.ls_cpu }}m"},{"name":"resources.limits.memory","value":"{{ .Values.ls_memory }}Mi"},{"name":"resources.requests.cpu","value":"{{ .Values.ls_cpu }}m"},{"name":"resources.requests.memory","value":"{{ .Values.ls_memory }}Mi"},{"name":"extraEnv[0].name","value":"PIPELINE_BATCH_SIZE"},{"forceString":true,"name":"extraEnv[0].value","value":"{{ .Values.ls_batch_size }}"},{"name":"extraEnv[1].name","value":"PIPELINE_BATCH_DELAY"},{"forceString":true,"name":"extraEnv[1].value","value":"{{ .Values.ls_batch_delay }}"},{"name":"extraEnv[2].name","value":"PIPELINE_WORKERS"},{"forceString":true,"name":"extraEnv[2].value","value":"{{ .Values.ls_workers }}"}],"helmValuesFrom":[{"configMap":{"name":"logstash"}}],"name":"logstash"}],"setupVolumes":[{"configMap":{"name":"monitoring"},"name":"monitoring"}]}}}}
+    redskyops.dev/experiment-url: https://rso-staging-b.carbonrelay.dev/api/experiments/elk
+    redskyops.dev/next-trial-url: https://rso-staging-b.carbonrelay.dev/api/experiments/elk/trials/next
+  creationTimestamp: "2019-09-30T19:43:00Z"
+  deletionGracePeriodSeconds: 0
+  deletionTimestamp: "2019-10-01T12:23:51Z"
+  finalizers:
+  - experimentFinalizer.redskyops.dev
+  generation: 25
+  name: elk
+  namespace: default
+  resourceVersion: "222503"
+  selfLink: /apis/redskyops.dev/v1alpha1/namespaces/default/experiments/elk
+  uid: 8280840a-e3ba-11e9-b901-42010a800081
+spec:
+  budget: 40
+  burnIn: 10
+  metrics:
+  - minimize: true
+    name: cost
+    port: 0
+    query: scalar((sum(container_cpu_allocation{namespace="{{ .Trial.Namespace }}"}))*22
+      + (sum(container_memory_allocation_bytes{namespace="{{ .Trial.Namespace }}"})/1000000000)*3)
+    selector:
+      matchLabels:
+        app: prometheus
+    type: prometheus
+  - name: speed
+    port: 0
+    query: scalar(sum by (cluster)(rate(elasticsearch_indices_docs_primary[2m])))
+    selector:
+      matchLabels:
+        app: prometheus
+    type: prometheus
+  parameters:
+  - max: 8000
+    min: 2000
+    name: es_memory
+  - max: 4000
+    min: 500
+    name: es_cpu
+  - max: 4
+    min: 2
+    name: es_replicas
+  - max: 8000
+    min: 3000
+    name: ls_memory
+  - max: 4000
+    min: 500
+    name: ls_cpu
+  - max: 4
+    min: 2
+    name: ls_replicas
+  - max: 8
+    min: 1
+    name: ls_workers
+  - max: 500
+    min: 5
+    name: ls_batch_size
+  - max: 500
+    min: 5
+    name: ls_batch_delay
+  - max: 80
+    min: 20
+    name: es_heap_percent
+  - max: 35
+    min: 20
+    name: ls_heap_percent
+  patches:
+  - patch: ""
+    targetRef:
+      apiVersion: apps/v1
+      kind: StatefulSet
+      name: elasticsearch-master
+  - patch: ""
+    targetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: elasticsearch-client
+  - patch: |
+      spec:
+        replicas: {{ .Values.es_replicas }}
+        template:
+          spec:
+            containers:
+            - name: elasticsearch
+              env:
+              - name: ES_JAVA_OPTS
+                value: "-Djava.net.preferIPv4Stack=true -Xms{{ percent .Values.es_memory .Values.es_heap_percent }}m -Xmx{{ percent .Values.es_memory .Values.es_heap_percent }}m"
+              resources:
+                limits:
+                  cpu: "{{ .Values.es_cpu }}m"
+                  memory: "{{ .Values.es_memory }}Mi"
+                requests:
+                  cpu: "{{ .Values.es_cpu }}m"
+                  memory: "{{ .Values.es_memory }}Mi"
+    targetRef:
+      apiVersion: apps/v1
+      kind: StatefulSet
+      name: elasticsearch-data
+  - patch: |
+      spec:
+        replicas: {{ .Values.ls_replicas }}
+        template:
+          spec:
+            containers:
+            - name: logstash
+              env:
+              - name: LS_JAVA_OPTS
+                value: "-Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{ percent .Values.ls_memory .Values.ls_heap_percent }}m"
+              - name: PIPELINE_BATCH_SIZE
+                value: "{{ .Values.ls_batch_size }}"
+              - name: PIPELINE_BATCH_DELAY
+                value: "{{ .Values.ls_batch_delay }}"
+              - name: PIPELINE_WORKERS
+                value: "{{ .Values.ls_workers }}"
+              resources:
+                limits:
+                  cpu: "{{ .Values.ls_cpu }}m"
+                  memory: "{{ .Values.ls_memory }}Mi"
+                requests:
+                  cpu: "{{ .Values.ls_cpu }}m"
+                  memory: "{{ .Values.ls_memory }}Mi"
+    targetRef:
+      apiVersion: apps/v1
+      kind: StatefulSet
+      name: logstash
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      approximateRuntime: 3m0s
+      setupServiceAccountName: redsky
+      setupTasks:
+      - name: monitoring
+        volumeMounts:
+        - mountPath: /workspace/base/resources
+          name: monitoring
+      - helmChart: stable/elasticsearch
+        helmValues:
+        - name: cluster.name
+          value: elk-demo
+        - name: data.terminationGracePeriodSeconds
+          value: "5"
+        - name: data.podManagementPolicy
+          value: Parallel
+        - name: data.replicas
+          value: '{{ .Values.es_replicas }}'
+        - name: data.heapSize
+          value: '{{ percent .Values.es_memory .Values.es_heap_percent }}m'
+        - name: data.resources.limits.cpu
+          value: '{{ .Values.es_cpu }}m'
+        - name: data.resources.limits.memory
+          value: '{{ .Values.es_memory }}Mi'
+        - name: data.resources.requests.cpu
+          value: '{{ .Values.es_cpu }}m'
+        - name: data.resources.requests.memory
+          value: '{{ .Values.es_memory }}Mi'
+        name: elasticsearch
+      - helmChart: stable/elasticsearch-exporter
+        helmValues:
+        - name: es.uri
+          value: http://elasticsearch-client:9200
+        name: elasticsearch-exporter
+      - helmChart: stable/logstash
+        helmValues:
+        - name: replicaCount
+          value: '{{ .Values.ls_replicas }}'
+        - name: logstashJavaOpts
+          value: -Xmx{{ percent .Values.ls_memory .Values.ls_heap_percent }}m -Xms{{
+            percent .Values.ls_memory .Values.ls_heap_percent }}m
+        - name: resources.limits.cpu
+          value: '{{ .Values.ls_cpu }}m'
+        - name: resources.limits.memory
+          value: '{{ .Values.ls_memory }}Mi'
+        - name: resources.requests.cpu
+          value: '{{ .Values.ls_cpu }}m'
+        - name: resources.requests.memory
+          value: '{{ .Values.ls_memory }}Mi'
+        - name: extraEnv[0].name
+          value: PIPELINE_BATCH_SIZE
+        - forceString: true
+          name: extraEnv[0].value
+          value: '{{ .Values.ls_batch_size }}'
+        - name: extraEnv[1].name
+          value: PIPELINE_BATCH_DELAY
+        - forceString: true
+          name: extraEnv[1].value
+          value: '{{ .Values.ls_batch_delay }}'
+        - name: extraEnv[2].name
+          value: PIPELINE_WORKERS
+        - forceString: true
+          name: extraEnv[2].value
+          value: '{{ .Values.ls_workers }}'
+        helmValuesFrom:
+        - configMap:
+            name: logstash
+        name: logstash
+      setupVolumes:
+      - configMap:
+          name: monitoring
+        name: monitoring
+status:
+  activeTrials: 0
