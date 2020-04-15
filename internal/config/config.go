@@ -252,6 +252,7 @@ func (ri *RevocationInformation) RemoveAuthorization() Change {
 	}
 }
 
+
 // RevocationInfo returns the information necessary to revoke an authorization entry from the configuration
 func (rsc *RedSkyConfig) RevocationInfo(name string) (*RevocationInformation, error) {
 	var authorizationName, serverName string
